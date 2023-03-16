@@ -1,7 +1,7 @@
-from splinter import Browser, browser
+from splinter import Browser
 from bs4 import BeautifulSoup as soup
 import pandas as pd
-import datetime as dt
+
 from webdriver_manager.chrome import ChromeDriverManager
 
 def scrape_all():
@@ -16,8 +16,7 @@ def scrape_all():
         'news_paragraph' : news_paragraph,
         'featured_image' : featured_image(browser),
         'facts' : mars_facts(),
-        'hemispheres' : img_urls_titles,
-        'last_modified' : dt.datetime.now()
+        'hemispheres' : img_urls_titles
     }
     browser.quit()
     return data
@@ -32,9 +31,9 @@ def mars_news(browser):
     news_soup = soup(html, 'html.parser')
 
     try:
-        slide_elem = news_soup.select_one('div.list_text')
-        news_title = slide_elem.find('div', class_='content_title').get_text()
-        news_p = slide_elem.find('div', class_='article_teaser_body').get_text()
+        tit_par_elem = news_soup.select_one('div.list_text')
+        news_title = tit_par_elem.find('div', class_='content_title').get_text()
+        news_p = tit_par_elem.find('div', class_='article_teaser_body').get_text()
 
     except AttributeError:
         return None, None
