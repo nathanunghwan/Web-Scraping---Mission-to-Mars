@@ -1,23 +1,30 @@
-# Import 
+# Automates browser actions
 from splinter import Browser
+
+# Parses the HTML
 from bs4 import BeautifulSoup as soup
-from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
+
+
+# For scraping with Chrome
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Collect all scraped data
 def scrape_all():
+    # Setup splinter
+    # browser = init_browser()
     executable_path = {'executable_path': ChromeDriverManager().install()}
     browser = Browser('chrome', **executable_path, headless=True)
 
-    news_title, news_paragraph = mars_news(browser)
+    news_title, news_para = mars_news(browser)
     img_urls_titles = hemisphere(browser)
     # Stroe results in dictionary
     data = {
         'news_title' : news_title,
-        'news_paragraph' : news_paragraph,
+        'news_paragraph' : news_para,
         'featured_image' : featured_image(browser),
         'facts' : mars_facts(),
-        'hemispheres' : img_urls_titles,
+        'hemispheres' : img_urls_titles
     }
     browser.quit()
     return data
@@ -46,13 +53,14 @@ def mars_news(browser):
     return latest_news_title, news_para
 
 
-# Scrape JPL Mars Space Images - Featured Image
+# Scrape Mars Space Images - Featured Image
 def featured_image(browser):
-    url = 'https:/spaceimages-mars.com/'
+    url = 'https://spaceimages-mars.com/'
     browser.visit(url)
 
     # Find and click the full image button
     image_button_elem = browser.find_by_tag('button')[1]
+    image_button_elem.click()
 
     # Convert the browser html to a soup object 
     html = browser.html
@@ -69,15 +77,16 @@ def featured_image(browser):
     return featured_img_url
 
 # Scrape Mars Facts
-def mars_fact():
+def mars_facts():
     # Vist URL and use Pandas to scrape the table containing facts  about the planet including Diameter, Mass, etc.
     try:
         url = 'https://galaxyfacts-mars.com/'
-        df = pd.read_html(url, header=0)[0]
+        df = pd.read_html(url)[0]
     except BaseException:
         return None
     # Set ''Mars - Earth Comparison' as index 
-    df.set_index('Mars - Earth Comparison', inplace=True)
+    df.columns = ['Description','Mars','Earth']
+    df.set_index('Description', inplace=True)
 
     # Convert back to HTML format
     return df.to_html()
